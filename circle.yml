@@ -1,0 +1,32 @@
+dependencies:
+  override:
+    - /bin/true
+  cache_directories:
+    - "~/.local"
+  pre:
+    - >-
+      if [[ ! -d "$HOME/.local/debs" ]]; then \
+        mkdir -p "$HOME/.local/debs"; cd "$HOME/.local/debs" \
+        && sudo apt-get download cmake gcc autoconf pkg-config libtool \
+      ; fi
+  post:
+    - sudo dpkg -i $HOME/.local/debs/*.deb || sudo apt-get -f install
+    - cd $HOME/sffmpeg
+    - make
+      timeout: 7200
+
+deployment:
+  master:
+    branch: master
+    commands:
+      - git config user.email "devdoomari@devdoomari"
+      - git config user.name "devdoomari-dev"
+      - git checkout -b dist
+      - git pull origin master
+      - git merge -X theirs --no-edit master
+      - make
+      - git add -f build/bin
+      - git commit --allow-empty -m $'generated from:'"$CIRCLE_SHA1"$'\ntriggered by:'"$CIRCLE_USERNAME"$'\n[ci skip]'
+      - git tag -a $'dist_'"$CIRCLE_BUILD_NUM" -m "dist"
+      - git push --force origin dist --follow-tags
+
