@@ -12,8 +12,8 @@ dependencies:
   post:
     - sudo dpkg -i $HOME/.local/debs/*.deb || sudo apt-get -f install
     - cd $HOME/sffmpeg
-    - make
-      timeout: 7200
+    - make:
+       timeout: 7200
 
 deployment:
   master:
